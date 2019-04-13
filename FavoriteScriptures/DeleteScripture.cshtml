@@ -1,0 +1,116 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Delete Scripture";
+    Page.Info = "If you decide you want to delete a scripture, review the information below and confirm your deletion!";
+
+    var book = "";
+    var chapter = "";
+    var verse = "";
+    var notes = "";
+    DateTime date = new DateTime();
+    var newDate = "";
+    var Id = "";
+    if (!IsPost)
+    {
+        if (!Request.QueryString["Id"].IsEmpty() && Request.QueryString["Id"].IsInt())
+        {
+            Id = Request.QueryString["Id"];
+            var db = Database.Open("Scriptures");
+            var dbCommand = "SELECT * FROM ScriptureTable WHERE Id = @0";
+            var row = db.QuerySingle(dbCommand, Id);
+            if (row != null)
+            {
+                book = row.book;
+                chapter = row.chapter;
+                verse = row.verse;
+                notes = row.notes;
+                date = row.date;
+                newDate = date.ToShortDateString();
+            }
+            else
+            {
+                Validation.AddFormError("No scripture was found for that ID.");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No scripture was found for that ID.");
+        }
+    }
+
+    if (IsPost && !Request["buttonDelete"].IsEmpty())
+    {
+        Id = Request.Form["Id"];
+        var db = Database.Open("Scriptures");
+        var deleteCommand = "DELETE FROM ScriptureTable WHERE Id = @0";
+        db.Execute(deleteCommand, Id);
+        Response.Redirect("~/FavoriteScriptures");
+    }
+}
+
+<html>
+<head>
+    <title>Delete a Scripture</title>
+</head>
+<body>
+    <h1>Delete a Scripture</h1>
+    <hr />
+    @Html.ValidationSummary()
+
+    <form method="post">
+        <fieldset>
+            <legend>Scripture Information</legend>
+            <br />
+            <div class="row">
+                <div class="col-3">
+                    <span>Book:</span>
+                </div>
+                <div class="col-3">
+                    <span>@book</span>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">
+                    <span>Chapter:</span>
+                </div>
+                <div class="col-3">
+                    <span>@chapter</span>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">
+                    <span>Verse:</span>
+                </div>
+                <div class="col-3">
+                    <span>@verse</span>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">
+                    <span>Notes:</span>
+                </div>
+                <div class="col-3">
+                    <span>@notes</span>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-3">
+                    <span>Date:</span>
+                </div>
+                <div class="col-3">
+                    <span>@newDate</span>
+                </div>
+            </div>
+
+            <input type="hidden" name="Id" value="@Id" />
+            <hr />
+            <p><input type="submit" class="btn btn-danger" name="buttonDelete" value="Delete Scripture" /></p>
+        </fieldset>
+        <p><a href="~/FavoriteScriptures" class="btn btn-primary">Return to All Scriptures</a></p>
+    </form>
+</body>
+</html>
